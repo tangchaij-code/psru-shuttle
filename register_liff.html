@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ลงทะเบียนนักศึกษา - ระบบรถรับส่งไฟฟ้า PSRU</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Tabler-Icons-Webfont/3.1.0/tabler-icons.min.css">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:'Sarabun', sans-serif;
+    background:#e8f0eb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:24px;
+  }
+
+  .phone-frame {
+    width:100%;
+    max-width:380px;
+    height:700px;
+    background:#0d4f2e;
+    border-radius:36px;
+    padding:6px;
+    box-shadow:0 16px 48px rgba(0,0,0,.2);
+  }
+
+  .screen {
+    background:#f7faf8;
+    border-radius:30px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    position:relative;
+  }
+
+  /* ---- header ---- */
+  .header {
+    background:#0d4f2e;
+    padding:28px 24px 18px;
+    text-align:center;
+    flex-shrink:0;
+  }
+  .header-sub {
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:#6fcf97;
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .header-title {
+    font-size:18px;
+    font-weight:700;
+    color:#fff;
+  }
+
+  /* ---- liff status banner ---- */
+  .liff-banner {
+    background:#fff3e0;
+    color:#b8730a;
+    font-size:11px;
+    padding:8px 16px;
+    text-align:center;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .liff-banner.connected {
+    background:#eafbf0;
+    color:#07964a;
+  }
+  .liff-banner i { font-size:14px; }
+
+  /* ---- step bar ---- */
+  .step-bar {
+    background:#0d4f2e;
+    padding:0 24px 16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .step-dot {
+    width:28px;
+    height:6px;
+    border-radius:3px;
+    background:rgba(255,255,255,.2);
+  }
+  .step-dot.active { background:#6fcf97; }
+  .step-label {
+    font-size:11px;
+    color:rgba(255,255,255,.6);
+    margin-left:4px;
+  }
+
+  /* ---- form ---- */
+  .form-wrapper {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    min-height:0;
+  }
+
+  .form-scroll {
+    flex:1;
+    overflow-y:auto;
+    padding:18px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-height:0;
+  }
+  .form-scroll::-webkit-scrollbar { display:none; }
+
+  .section-label {
+    font-size:11px;
+    font-weight:700;
+    color:#2d7a4f;
+    letter-spacing:1px;
+    padding-bottom:8px;
+    border-bottom:1.5px solid #d0e8d8;
+    margin-top:4px;
+  }
+  .section-label:first-child { margin-top:0; }
+
+  .form-group label {
+    font-size:12px;
+    color:#5f6e62;
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
+  }
+
+  .input-wrap {
+    display:flex;
+    align-items:center;
+    background:#fff;
+    border:1.5px solid #c8d8cc;
+    border-radius:12px;
+    padding:0 13px;
+    height:46px;
+    gap:9px;
+    transition:border-color .15s;
+  }
+  .input-wrap:focus-within { border-color:#0d4f2e; }
+  .input-wrap i { font-size:17px; color:#2d7a4f; flex-shrink:0; }
+
+  .input-wrap input,
+  .input-wrap select {
+    flex:1;
+    border:none;
+    outline:none;
+    font-family:'Sarabun', sans-serif;
+    font-size:14px;
+    color:#1a2d22;
+    background:transparent;
+    height:100%;
+  }
+  .input-wrap input::placeholder { color:#aab8ad; }
+  .input-wrap select { appearance:none; cursor:pointer; }
+
+  .field-error {
+    font-size:11px;
+    color:#c0502e;
+    margin-top:-4px;
+    display:none;
+  }
+  .input-wrap.error { border-color:#e0a08a; }
+
+  .row2 {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .consent-box {
+    background:#f0f8f3;
+    border:1.5px solid #c8d8cc;
+    border-radius:12px;
+    padding:12px;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:11px;
+    color:#5f6e62;
+    line-height:1.5;
+    margin-top:4px;
+  }
+  .consent-box input[type="checkbox"] {
+    margin-top:1px;
+    accent-color:#0d4f2e;
+    flex-shrink:0;
+    width:15px;
+    height:15px;
+  }
+
+  /* ---- footer ---- */
+  .form-footer {
+    padding:12px 20px 18px;
+    border-top:1px solid #dce8e0;
+    background:#f7faf8;
+    flex-shrink:0;
+  }
+
+  .btn-register {
+    width:100%;
+    height:50px;
+    background:#0d4f2e;
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    font-family:'Sarabun', sans-serif;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:background .15s, transform .1s;
+  }
+  .btn-register:hover { background:#0a3d23; }
+  .btn-register:active { transform:scale(.98); }
+
+  /* ---- success overlay ---- */
+  .success-overlay {
+    position:absolute;
+    inset:0;
+    background:#0d4f2e;
+    border-radius:30px;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    padding:32px;
+    text-align:center;
+  }
+  .success-overlay.show { display:flex; }
+
+  .success-icon {
+    width:72px;
+    height:72px;
+    border-radius:50%;
+    background:rgba(255,255,255,.12);
+    border:2px solid rgba(255,255,255,.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:20px;
+  }
+  .success-icon i { font-size:36px; color:#6fcf97; }
+
+  .success-title {
+    font-size:19px;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  .success-sub {
+    font-size:13px;
+    color:rgba(255,255,255,.65);
+    margin-bottom:24px;
+    line-height:1.6;
+  }
+
+  .success-card {
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:12px;
+    padding:14px 16px;
+    width:100%;
+    margin-bottom:24px;
+    text-align:left;
+  }
+  .success-card .row {
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    padding:5px 0;
+  }
+  .success-card .row span:first-child { color:rgba(255,255,255,.55); }
+  .success-card .row span:last-child { color:#fff; font-weight:500; }
+
+  .btn-goto-login {
+    background:#fff;
+    color:#0d4f2e;
+    border:none;
+    border-radius:12px;
+    padding:13px 32px;
+    font-family:'Sarabun', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    width:100%;
+  }
+
+  /* ---- demo notice ---- */
+  .demo-notice {
+    background:#fff3e0;
+    color:#b8730a;
+    font-size:10px;
+    padding:6px 16px;
+    text-align:center;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="phone-frame">
+<div class="screen">
+
+  <div class="header">
+    <div class="header-sub">สมัครใช้งานผ่าน LINE</div>
+    <div class="header-title">ลงทะเบียนนักศึกษา</div>
+  </div>
+
+  <div class="liff-banner" id="liffBanner">
+    <i class="ti ti-loader-2" aria-hidden="true"></i>
+    <span id="liffBannerText">กำลังเชื่อมต่อ LINE...</span>
+  </div>
+
+  <div class="step-bar">
+    <div class="step-dot active"></div>
+    <div class="step-dot active"></div>
+    <div class="step-dot active"></div>
+    <span class="step-label">กรุณากรอกข้อมูลเพิ่มเติม</span>
+  </div>
+
+  <form class="form-wrapper" id="registerForm" onsubmit="submitRegister(event)">
+    <div class="form-scroll">
+
+      <div class="section-label">ข้อมูลส่วนตัว</div>
+
+      <div class="row2">
+        <div class="form-group">
+          <label>ชื่อ</label>
+          <div class="input-wrap">
+            <i class="ti ti-user" aria-hidden="true"></i>
+            <input id="fname" required placeholder="ชื่อจริง">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>นามสกุล</label>
+          <div class="input-wrap">
+            <input id="lname" required placeholder="นามสกุล">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>รหัสนักศึกษา</label>
+        <div class="input-wrap" id="studentIdWrap">
+          <i class="ti ti-id-badge" aria-hidden="true"></i>
+          <input id="student_id" required maxlength="10" placeholder="เช่น 6612231050" inputmode="numeric">
+        </div>
+        <div class="field-error" id="studentIdError">กรุณากรอกรหัสนักศึกษาให้ครบ 10 หลัก</div>
+      </div>
+
+      <div class="form-group">
+        <label>คณะ / สาขา</label>
+        <div class="input-wrap">
+          <i class="ti ti-school" aria-hidden="true"></i>
+          <select id="faculty" required>
+            <option value="">เลือกคณะ</option>
+            <option value="cs">วิทยาการคอมพิวเตอร์</option>
+            <option value="it">เทคโนโลยีสารสนเทศ</option>
+            <option value="edu">ครุศาสตร์</option>
+            <option value="mgmt">วิทยาการจัดการ</option>
+            <option value="human">มนุษยศาสตร์และสังคมศาสตร์</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>เบอร์โทรศัพท์</label>
+        <div class="input-wrap" id="phoneWrap">
+          <i class="ti ti-phone" aria-hidden="true"></i>
+          <input id="phone" required placeholder="0xx-xxx-xxxx" inputmode="tel">
+        </div>
+        <div class="field-error" id="phoneError">กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง</div>
+      </div>
+
+      <div class="section-label">บัญชี LINE ที่เชื่อมต่อ</div>
+
+      <div class="input-wrap" style="background:#f0f8f3;">
+        <i class="ti ti-brand-line" aria-hidden="true"></i>
+        <input id="lineUidDisplay" readonly value="กำลังตรวจสอบ..." style="color:#5f6e62;">
+      </div>
+
+      <div class="consent-box">
+        <input type="checkbox" id="consent" required>
+        <label for="consent">ฉันยอมรับเงื่อนไขการใช้งานและการจัดเก็บข้อมูลส่วนบุคคลของระบบรถรับส่งไฟฟ้า PSRU</label>
+      </div>
+
+    </div>
+
+    <div class="form-footer">
+      <button type="submit" class="btn-register">
+        <i class="ti ti-user-plus" aria-hidden="true"></i>
+        ลงทะเบียน
+      </button>
+    </div>
+  </form>
+
+  <div class="success-overlay" id="success">
+    <div class="success-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+    <div class="success-title">ลงทะเบียนสำเร็จ</div>
+    <div class="success-sub">บัญชี LINE ของคุณถูกผูกกับรหัสนักศึกษาแล้ว<br>ครั้งต่อไปเข้าใช้งานได้ทันทีไม่ต้องกรอกซ้ำ</div>
+
+    <div class="success-card">
+      <div class="row"><span>ชื่อ-นามสกุล</span><span id="rName">-</span></div>
+      <div class="row"><span>รหัสนักศึกษา</span><span id="rId">-</span></div>
+      <div class="row"><span>คณะ</span><span id="rFaculty">-</span></div>
+      <div class="row"><span>LINE UID</span><span id="rUid">-</span></div>
+    </div>
+
+    <button onclick="closeOrReset()" class="btn-goto-login">
+      <span id="closeBtnLabel">กลับแชท LINE</span>
+    </button>
+  </div>
+
+</div>
+</div>
+
+<script>
+  var userLineUid = null;
+  var isInLiffEnvironment = false;
+  var facultyNames = {
+    cs: 'วิทยาการคอมพิวเตอร์',
+    it: 'เทคโนโลยีสารสนเทศ',
+    edu: 'ครุศาสตร์',
+    mgmt: 'วิทยาการจัดการ',
+    human: 'มนุษยศาสตร์และสังคมศาสตร์'
+  };
+
+  function setBanner(text, connected) {
+    document.getElementById('liffBannerText').textContent = text;
+    var banner = document.getElementById('liffBanner');
+    var icon = banner.querySelector('i');
+    if (connected) {
+      banner.classList.add('connected');
+      icon.className = 'ti ti-brand-line';
+    } else {
+      banner.classList.remove('connected');
+      icon.className = 'ti ti-loader-2';
+    }
+  }
+
+  async function main() {
+    try {
+      await liff.init({ liffId: '2010528983-hl7B1Qrs' });
+      isInLiffEnvironment = true;
+
+      if (liff.isLoggedIn()) {
+        var profile = await liff.getProfile();
+        userLineUid = profile.userId;
+        onLiffReady(profile.displayName);
+      } else {
+        liff.login();
+      }
+    } catch (err) {
+      // No real LINE connection available in this environment.
+      // Falls back to a demo LINE identity so the form is still usable end to end.
+      console.warn('LIFF init failed, using demo fallback:', err);
+      isInLiffEnvironment = false;
+      userLineUid = 'demoU' + Math.random().toString(36).slice(2, 10);
+      onLiffReady('ผู้ใช้ทดสอบ (Demo)');
+    }
+  }
+
+  function onLiffReady(displayName) {
+    setBanner(isInLiffEnvironment ? 'เชื่อมต่อ LINE สำเร็จ' : 'โหมดทดสอบ: จำลองบัญชี LINE', true);
+    document.getElementById('lineUidDisplay').value = displayName + ' (' + userLineUid + ')';
+  }
+
+  function validate() {
+    var ok = true;
+
+    var studentId = document.getElementById('student_id');
+    var studentIdWrap = document.getElementById('studentIdWrap');
+    var studentIdError = document.getElementById('studentIdError');
+    if (studentId.value.trim().length !== 10 || !/^\d+$/.test(studentId.value.trim())) {
+      studentIdWrap.classList.add('error');
+      studentIdError.style.display = 'block';
+      ok = false;
+    } else {
+      studentIdWrap.classList.remove('error');
+      studentIdError.style.display = 'none';
+    }
+
+    var phone = document.getElementById('phone');
+    var phoneWrap = document.getElementById('phoneWrap');
+    var phoneError = document.getElementById('phoneError');
+    var digits = phone.value.replace(/\D/g, '');
+    if (digits.length < 9 || digits.length > 10) {
+      phoneWrap.classList.add('error');
+      phoneError.style.display = 'block';
+      ok = false;
+    } else {
+      phoneWrap.classList.remove('error');
+      phoneError.style.display = 'none';
+    }
+
+    return ok;
+  }
+
+  function submitRegister(e) {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    var fname = document.getElementById('fname').value.trim();
+    var lname = document.getElementById('lname').value.trim();
+    var studentId = document.getElementById('student_id').value.trim();
+    var facultyKey = document.getElementById('faculty').value;
+
+    document.getElementById('rName').textContent = fname + ' ' + lname;
+    document.getElementById('rId').textContent = studentId;
+    document.getElementById('rFaculty').textContent = facultyNames[facultyKey] || '-';
+    document.getElementById('rUid').textContent = userLineUid || '-';
+
+    document.getElementById('closeBtnLabel').textContent = isInLiffEnvironment
+      ? 'กลับแชท LINE'
+      : 'ปิดหน้าต่างทดสอบ';
+
+    document.getElementById('success').classList.add('show');
+
+    // In production: POST this data to register_student.php which writes
+    // {fname, lname, studentId, facultyKey, phone, lineUid} into MySQL.
+  }
+
+  function closeOrReset() {
+    if (isInLiffEnvironment && typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+      liff.closeWindow();
+    } else {
+      document.getElementById('success').classList.remove('show');
+      document.getElementById('registerForm').reset();
+    }
+  }
+
+  main();
+</script>
+
+</body>
+</html>
